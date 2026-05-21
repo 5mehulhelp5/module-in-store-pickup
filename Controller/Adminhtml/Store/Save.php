@@ -14,19 +14,38 @@ use ETechFlow\InStorePickup\Model\TimeNormalizer;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\Action\HttpPostActionInterface;
+use Magento\Framework\App\Request\DataPersistorInterface;
+use Magento\Framework\Controller\Result\Json as JsonResult;
+use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Controller\Result\Redirect;
+use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Psr\Log\LoggerInterface;
 
 /**
  * POST handler for the store edit form.
  *
- * Trim everything, validate code uniqueness, persist via repository.
- * Falls back to the form (with error) on validation failure.
+ * v1.1.2 fix: Magento UI Component forms submit via AJAX. Returning a
+ * plain HTTP 302 Redirect causes the AJAX library to silently follow
+ * the redirect (fetching the new page HTML behind the scenes) without
+ * the browser actually navigating — leaving the user on the same edit
+ * URL with the form cleared by the UI's reset-on-success behaviour.
+ *
+ * Fix: detect AJAX submits via `isAjax()` / `X-Requested-With` and
+ * return ResultJson with a proper `{ error, messages, redirect, back }`
+ * shape that Magento's `Magento_Ui/js/form/save` handler understands.
+ * Plain (non-AJAX) submits keep the original Redirect behaviour for
+ * backwards compatibility.
+ *
+ * Also: persist form data via DataPersistor on save failure so the
+ * customer's typing doesn't get lost between attempts.
  */
 class Save extends Action implements HttpPostActionInterface
 {
     public const ADMIN_RESOURCE = 'ETechFlow_InStorePickup::stores';
+
+    /** Session key used by Ui\Component\Form\DataProvider to rehydrate. */
+    private const DATA_PERSISTOR_KEY = 'etechflow_isp_store';
 
     public function __construct(
         Context $context,
@@ -37,43 +56,44 @@ class Save extends Action implements HttpPostActionInterface
         private readonly ExceptionManager $exceptionManager,
         private readonly WindowOverrideManager $windowOverrideManager,
         private readonly TimeNormalizer $timeNormalizer,
+        private readonly DataPersistorInterface $dataPersistor,
+        private readonly JsonFactory $jsonFactory,
         private readonly LoggerInterface $logger
     ) {
         parent::__construct($context);
     }
 
-    /**
-     * @return Redirect
-     */
-    public function execute()
+    public function execute(): ResultInterface
     {
-        /** @var Redirect $redirect */
-        $redirect = $this->resultRedirectFactory->create();
-
         $data = $this->getRequest()->getPostValue();
         if (empty($data)) {
-            return $redirect->setPath('*/*/index');
+            return $this->respondRedirect('*/*/index');
         }
 
         $data = $this->normalisePayload($data);
+        $storeId = (int) ($data['store_id'] ?? 0);
 
         try {
-            // Load existing OR create new
-            $storeId = (int) ($data['store_id'] ?? 0);
-            if ($storeId > 0) {
-                $store = $this->storeRepository->getById($storeId);
-            } else {
-                $store = $this->storeFactory->create();
-            }
+            // Persist form data BEFORE we touch the DB — if anything later
+            // throws, the DataProvider rehydrates the form from this on
+            // the next page load.
+            $this->dataPersistor->set(self::DATA_PERSISTOR_KEY, $data);
 
             // Required fields
             if (empty($data['code'])) {
                 $this->messageManager->addErrorMessage(__('Store code is required.'));
-                return $redirect->setPath('*/*/edit', ['store_id' => $storeId]);
+                return $this->respondRedirect('*/*/edit', ['store_id' => $storeId], true);
             }
             if (empty($data['name'])) {
                 $this->messageManager->addErrorMessage(__('Store name is required.'));
-                return $redirect->setPath('*/*/edit', ['store_id' => $storeId]);
+                return $this->respondRedirect('*/*/edit', ['store_id' => $storeId], true);
+            }
+
+            // Load existing OR create new
+            if ($storeId > 0) {
+                $store = $this->storeRepository->getById($storeId);
+            } else {
+                $store = $this->storeFactory->create();
             }
 
             // Uniqueness check for code (only when changed or new)
@@ -82,7 +102,7 @@ class Save extends Action implements HttpPostActionInterface
                     $existing = $this->storeRepository->getByCode($data['code']);
                     if ($existing->getStoreId() !== $storeId) {
                         $this->messageManager->addErrorMessage(__('A store with this code already exists.'));
-                        return $redirect->setPath('*/*/edit', ['store_id' => $storeId]);
+                        return $this->respondRedirect('*/*/edit', ['store_id' => $storeId], true);
                     }
                 } catch (NoSuchEntityException $e) {
                     // No existing store with that code — fine
@@ -137,17 +157,69 @@ class Save extends Action implements HttpPostActionInterface
                 $this->windowOverrideManager->replaceRows((int) $store->getStoreId(), $windowOverrides);
             }
 
+            // Save succeeded — clear the persisted form data so the next
+            // form load shows the DB state, not the just-typed values.
+            $this->dataPersistor->clear(self::DATA_PERSISTOR_KEY);
+
             $this->messageManager->addSuccessMessage(__('Store saved: %1', $store->getName()));
 
-            if ($this->getRequest()->getParam('back')) {
-                return $redirect->setPath('*/*/edit', ['store_id' => $store->getStoreId()]);
-            }
-            return $redirect->setPath('*/*/index');
+            // Default behaviour: after a successful Save, return the
+            // customer to the EDIT form for the just-saved store. This
+            // way they immediately see their saved data + can verify it.
+            // (Previous behaviour was to redirect to the listing, but
+            // that gives no visible feedback that the data persisted.)
+            //
+            // The user can click Back/Cancel to return to the listing.
+            return $this->respondRedirect(
+                '*/*/edit',
+                ['store_id' => $store->getStoreId(), '_current' => true]
+            );
         } catch (\Throwable $e) {
-            $this->logger->error('ETechFlow_InStorePickup: store save failed.', ['exception' => $e->getMessage()]);
+            $this->logger->error(
+                'ETechFlow_InStorePickup: store save failed.',
+                ['exception' => $e->getMessage(), 'trace' => $e->getTraceAsString()]
+            );
             $this->messageManager->addErrorMessage(__('Could not save store: %1', $e->getMessage()));
-            return $redirect->setPath('*/*/edit', ['store_id' => (int) ($data['store_id'] ?? 0)]);
+            return $this->respondRedirect('*/*/edit', ['store_id' => $storeId], true);
         }
+    }
+
+    /**
+     * AJAX-aware redirect.
+     *
+     * If the request was made via AJAX (UI Component form button-adapter
+     * does this), return ResultJson with the redirect URL baked in.
+     * Otherwise return a plain Redirect for legacy form submits.
+     *
+     * @param string                    $path
+     * @param array<string, mixed>      $params
+     * @param bool                      $isError If true, include error flag for the JS.
+     */
+    private function respondRedirect(string $path, array $params = [], bool $isError = false): ResultInterface
+    {
+        $url = $this->_url->getUrl($path, $params);
+
+        if ($this->isAjaxRequest()) {
+            /** @var JsonResult $json */
+            $json = $this->jsonFactory->create();
+            return $json->setData([
+                'redirect' => $url,
+                'error'    => $isError,
+                'back'     => false,
+            ]);
+        }
+
+        /** @var Redirect $redirect */
+        $redirect = $this->resultRedirectFactory->create();
+        return $redirect->setPath($path, $params);
+    }
+
+    private function isAjaxRequest(): bool
+    {
+        $request = $this->getRequest();
+        return $request->isAjax()
+            || $request->isXmlHttpRequest()
+            || strtolower((string) $request->getHeader('X-Requested-With')) === 'xmlhttprequest';
     }
 
     /**
