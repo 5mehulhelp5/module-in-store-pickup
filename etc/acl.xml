@@ -5,10 +5,21 @@
         <resources>
             <resource id="Magento_Backend::admin">
                 <resource id="Magento_Backend::stores">
-                    <resource id="Magento_Config::config">
-                        <resource id="ETechFlow_InStorePickup::config"
-                                  title="ETechFlow In-Store Pickup Configuration"
-                                  sortOrder="100"/>
+                    <!--
+                        v1.1.4 fix: must nest Magento_Config::config under
+                        Magento_Backend::stores_settings (the parent that
+                        Magento's own module-config declares it under).
+                        Nesting it directly under Magento_Backend::stores
+                        triggers Magento's ACL XSD "uniqueResourceId"
+                        constraint failure when merged with Core, 500-ing
+                        the entire admin.
+                    -->
+                    <resource id="Magento_Backend::stores_settings">
+                        <resource id="Magento_Config::config">
+                            <resource id="ETechFlow_InStorePickup::config"
+                                      title="ETechFlow In-Store Pickup Configuration"
+                                      sortOrder="100"/>
+                        </resource>
                     </resource>
                 </resource>
                 <resource id="ETechFlow_InStorePickup::menu"
