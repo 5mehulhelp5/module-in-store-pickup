@@ -4,6 +4,40 @@ All notable changes to this module. Adheres to [Semantic Versioning](https://sem
 
 ---
 
+## [1.2.1] — 2026-05-22 — CRITICAL: Magewire store picker has never rendered on Hyvä Checkout (wrong container name)
+
+### Fixed
+
+- **Rich Magewire store-picker card UI was silently failing to mount on every Hyvä Checkout install since v1.0.0.** The layout file `view/frontend/layout/hyva_checkout_components.xml` referenced container ID `checkout.shipping.before`, which **doesn't exist** in Hyvä Checkout — it's a stock Magento Checkout name. Hyvä Checkout has its own container vocabulary; the real shipping-area container is `checkout.shipping.methods.before`. Magento's layout merger treats a `<block>` under a non-existent `<referenceContainer>` as a no-op — block created but never bound, never rendered, no error logged. Customers fell back to the plain Magento shipping-method radio list (one radio per active store: "Pick up at Keystation Maldon Store · £0.00"). The carrier still worked, orders still completed, PINs still issued — the bug was purely UX (customers saw a bare radio instead of styled card list with selected-state highlighting, instructions panel, accessibility roles).
+
+  **Fix:** one-line change in `hyva_checkout_components.xml`:
+  ```
+  - <referenceContainer name="checkout.shipping.before">
+  + <referenceContainer name="checkout.shipping.methods.before">
+  ```
+
+  Real Hyvä Checkout shipping-area containers (verified on Keystation 2.4.8 + Hyva Commerce v1.4.5):
+  - `checkout.shipping.methods.before` / `.after`
+  - `checkout.shipping.section`
+  - `checkout.shipping-details.before` / `.section`
+
+### Migration
+
+```
+composer update etechflow/module-in-store-pickup
+bin/magento setup:upgrade
+bin/magento setup:di:compile
+bin/magento setup:static-content:deploy -f
+bin/magento cache:flush
+docker restart <php-fpm-container>   # OPcache
+```
+
+No data migration. Existing orders, stores, holidays, all preserved. On next checkout, customers on Hyvä Checkout will see the rich Magewire card picker (with name + address + phone + instructions + "Selected" badge + accessible roles) instead of the bare radio fallback.
+
+**Stores not on Hyvä Checkout** (plain Hyvä Theme, Luma) — unaffected. The `hyva_checkout_components.xml` layout handle only triggers when Hyvä Checkout is installed and active.
+
+---
+
 ## [1.2.0] — 2026-05-22 — Product-page "Click & Collect available" widget
 
 Closes the visible feature gap between checkout-only ISP and competitor modules (Amasty Store Pickup, MageWorx, Wyomind) which all surface Click & Collect on the product page itself. Until now ISP only showed up at checkout — customers had no way to know C&C was available before committing to buy.

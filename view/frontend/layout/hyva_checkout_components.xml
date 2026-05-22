@@ -5,21 +5,30 @@
         <!--
             Hyvä Checkout reads this layout file to discover and mount
             additional checkout components. The container ID
-            `checkout.shipping.before` renders BEFORE the shipping-method
-            list — placing the store picker first lets the customer
-            choose a pickup location, which then auto-fills their
+            `checkout.shipping.methods.before` renders BEFORE the shipping-
+            method radio list — placing the store picker first lets the
+            customer choose a pickup location, which then auto-fills their
             shipping address (Phase 7 plugin).
+
+            v1.2.1 fix: previous releases referenced `checkout.shipping.before`,
+            which doesn't exist in Hyvä Checkout. The block was being added
+            to a non-existent container, never rendered, and customers fell
+            back to the plain shipping-method radio list (one method per
+            store, from our Carrier). Confirmed via `bin/magento dev:di:info`
+            on the deployed admin: the real shipping-area containers are
+            checkout.shipping.methods.before / .after, checkout.shipping.section,
+            checkout.shipping-details.before / .section.
 
             The Magewire component class extends \Magewirephp\Magewire\Component.
             That class is only autoloaded by Hyvä Checkout — stores without
             Hyvä Checkout never reach this layout handle, so the class file
             sits inert on disk.
 
-            On stores without Hyvä Checkout, the customer instead picks a
-            store via the standard Magento shipping-method radio list
-            (one method per store, courtesy of our Carrier).
+            On stores without Hyvä Checkout (plain Hyvä Theme, Luma), the
+            customer instead picks a store via the standard Magento shipping-
+            method radio list (one method per active store).
         -->
-        <referenceContainer name="checkout.shipping.before">
+        <referenceContainer name="checkout.shipping.methods.before">
             <block name="etechflow.isp.store.picker.magewire"
                    template="ETechFlow_InStorePickup::magewire/checkout/store-picker.phtml">
                 <arguments>

@@ -19,7 +19,10 @@ use ETechFlow\InStorePickup\Model\Performance\Profiler;
  *
  * Render contract:
  *
- *   - Renders inside Hyvä Checkout's `checkout.shipping.before` slot.
+ *   - Renders inside Hyvä Checkout's `checkout.shipping.methods.before` slot
+ *     (the v1.2.1 fix — earlier releases referenced `checkout.shipping.before`
+ *     which doesn't exist in Hyvä Checkout, so the picker silently failed to
+ *     mount and customers got the plain radio fallback).
  *   - On `mount()`: load active stores once. Populates $stores as a
  *     flat array of [code, name, address lines, phone, instructions].
  *   - Customer clicks a store card → `wire:click="pickStore('code')"` →
