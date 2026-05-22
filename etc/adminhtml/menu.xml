@@ -11,16 +11,18 @@
             Hovering it opens a mega-menu where each module contributes one
             column (or a single link if the module has only one page).
 
-            sortOrder 88 clusters us with the established vendor extensions
-            (Amasty, Magefan typically sit around 85–89) just above Magento's
-            Stores entry. Going higher (e.g. 305) parks us at the very bottom
-            of the sidebar under "Find Partners & Extensions", which is where
-            Hyva-admin's auto-grown items end up.
+            sortOrder 68 parks eTechFlow right above Amasty (sortOrder=69
+            on Keystation) — the established convention for paid extensions
+            is to cluster just above Stores. v1.1.14 used 88 expecting that
+            to land near Amasty, but Keystation's Hyva Commerce sidebar puts
+            Amasty at 69 and Magefan at ~70, so 88 ended up between System
+            (80) and Find Partners (100+). Verified live: 88 → bottom; 68 →
+            directly above Amasty.
         -->
         <add id="eTechFlow::root"
              title="eTechFlow"
              module="ETechFlow_InStorePickup"
-             sortOrder="88"
+             sortOrder="68"
              resource="Magento_Backend::admin"/>
 
         <add id="ETechFlow_InStorePickup::isp_root"

@@ -4,6 +4,26 @@ All notable changes to this module. Adheres to [Semantic Versioning](https://sem
 
 ---
 
+## [1.1.15] — 2026-05-22 — sortOrder 88 → 68 (park above Amasty)
+
+### Fixed
+
+- **eTechFlow sidebar entry not next to other vendor extensions.** v1.1.14 picked `sortOrder=88` expecting that to cluster with paid-extension vendors. Verified on Keystation's Hyva Commerce admin that Amasty is actually at `sortOrder=69`, so 88 landed between System (80) and Find Partners (100+) — not adjacent. **Fix:** dropped to `sortOrder=68` so eTechFlow sits directly above Amasty, matching the convention paid-extension vendors follow (cluster just above Stores in the same visual band).
+
+### Migration
+
+```
+composer update etechflow/module-in-store-pickup
+bin/magento setup:upgrade
+bin/magento setup:di:compile
+bin/magento setup:static-content:deploy -f
+bin/magento cache:flush
+```
+
+Pure menu position change — no schema, no behaviour, no admin route changes.
+
+---
+
 ## [1.1.14] — 2026-05-22 — Fix eTechFlow sidebar position + Configuration column grouping
 
 Two corrections to the v1.1.13 mega-menu pilot after live-test on Keystation Hyva Commerce admin.
