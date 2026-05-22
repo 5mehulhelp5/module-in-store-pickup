@@ -2,13 +2,30 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
     <menu>
-        <!-- Top-level eTechFlow menu (shared across all eTechFlow modules; only added once
-             — Magento merges menu entries from every module with the same id). -->
+        <!--
+            Shared top-level eTechFlow sidebar entry.
+
+            Declared identically by EVERY eTechFlow module — Magento merges
+            entries with the same id, so the entry exists exactly once even
+            with all modules installed, and missing exactly when zero are.
+            Hovering it opens a mega-menu where each module contributes one
+            column (or a single link if the module has only one page).
+
+            sortOrder 305 lands just after Magento's Stores (typically 300)
+            and before System (310). Customers can re-order via menu.xsd
+            overrides if they need a different position.
+        -->
+        <add id="eTechFlow::root"
+             title="eTechFlow"
+             module="ETechFlow_InStorePickup"
+             sortOrder="305"
+             resource="Magento_Backend::admin"/>
+
         <add id="ETechFlow_InStorePickup::isp_root"
              title="In-Store Pickup"
              module="ETechFlow_InStorePickup"
-             sortOrder="105"
-             parent="Magento_Backend::stores_settings"
+             sortOrder="10"
+             parent="eTechFlow::root"
              resource="ETechFlow_InStorePickup::menu"/>
 
         <add id="ETechFlow_InStorePickup::stores"
@@ -50,5 +67,21 @@
              parent="ETechFlow_InStorePickup::isp_root"
              action="etechflow_isp/pickupwindow/index"
              resource="ETechFlow_InStorePickup::pickup_windows"/>
+
+        <!--
+            Shared "Configuration" leaf at the bottom of the eTechFlow
+            sidebar group. All eTechFlow modules declare this same id
+            with their own section URL — Magento merges so only one
+            entry appears, and clicking it opens Stores → Configuration
+            with the eTechFlow tab pre-expanded. Any module's section
+            URL works because they all live under <tab id="etechflow">.
+        -->
+        <add id="eTechFlow::configuration"
+             title="Configuration"
+             module="ETechFlow_InStorePickup"
+             sortOrder="900"
+             parent="eTechFlow::root"
+             action="adminhtml/system_config/edit/section/etechflow_instorepickup"
+             resource="Magento_Config::config"/>
     </menu>
 </config>

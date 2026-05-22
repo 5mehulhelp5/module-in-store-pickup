@@ -4,6 +4,33 @@ All notable changes to this module. Adheres to [Semantic Versioning](https://sem
 
 ---
 
+## [1.1.13] — 2026-05-22 — Dedicated "eTechFlow" top-level sidebar entry (pilot)
+
+Until now, ISP's admin pages lived inside Magento's stock Stores menu (Stores → Settings → In-Store Pickup → …). Visually indistinguishable from core menu entries — merchants couldn't tell at a glance which items were paid eTechFlow extensions vs stock Magento. Established vendors (Amasty, Magefan, MageWorx) all anchor their modules under a dedicated top-level sidebar group with their brand name. This patch starts that pattern for eTechFlow with ISP as the pilot module.
+
+### Changed
+
+- **New top-level "eTechFlow" sidebar entry.** ISP's admin pages now live under a dedicated `eTechFlow::root` menu node (sortOrder 305 — sits just after Magento's Stores, before System). The mega-menu panel opens on hover with ISP's pages (Stores / Holidays / Store Tags / Amenities / Pickup Windows) as a column. When other eTechFlow modules ship the same pattern, each contributes one column to the same panel — Magento merges entries with identical ids, so the group exists once when any eTechFlow module is installed.
+- **`ETechFlow_InStorePickup::isp_root` reparented** from `Magento_Backend::stores_settings` → `eTechFlow::root`. The five submenu children (stores, holidays, tags, amenities, pickup_windows) stay parented under isp_root unchanged. No URL routes changed; only the sidebar location.
+- **New "Configuration" leaf** at the bottom of the eTechFlow sidebar group, opens `Stores → Configuration` with the eTechFlow tab pre-expanded (points to ISP's own section under `<tab id="etechflow">`). Visible only to users with `Magento_Config::config` permission.
+
+### Migration
+
+```
+composer update etechflow/module-in-store-pickup
+bin/magento setup:upgrade
+bin/magento cache:flush
+```
+
+No schema changes. No data migration. Pure menu-routing change — existing admin URLs (`/admin/etechflow_isp/store/index/` etc.) still work identically; only the sidebar location changed.
+
+### Notes
+
+- No inter-module dependency added — ISP remains standalone. When you install only ISP, the eTechFlow group exists with just ISP's column. When you install all eTechFlow modules, each contributes its own column via the same shared `eTechFlow::root` id.
+- This is the pilot module; the remaining ETechFlow modules (Delivery Date, Back-in-Stock Notifications, Shipping Table Rates, Order Email Editor, Image Optimizer, Page Speed Optimizer) will follow the same pattern in their next releases.
+
+---
+
 ## [1.1.12] — 2026-05-22 — Exception Day date picker fallback to typed text
 
 ### Fixed
