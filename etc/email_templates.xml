@@ -13,4 +13,10 @@
               type="html"
               module="ETechFlow_InStorePickup"
               area="frontend"/>
+    <template id="etechflow_isp_order_new"
+              label="ETechFlow ISP — Order Confirmation (pickup-aware)"
+              file="order_new_pickup.html"
+              type="html"
+              module="ETechFlow_InStorePickup"
+              area="frontend"/>
 </config>

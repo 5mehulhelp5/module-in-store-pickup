@@ -304,7 +304,6 @@
             <additionalClasses>
                 <class name="admin__fieldset-store-hours">true</class>
             </additionalClasses>
-            <hint translate="true">Set this store's regular weekly opening hours. Tick "Closed" for days the store doesn't open at all. Time fields accept "9:00", "9am", "9", "9:30 PM" — anything sensible will be normalised on save.</hint>
         </settings>
         <htmlContent name="opening_hours_tz_note">
             <block name="opening_hours_tz_note_block"
@@ -598,7 +597,6 @@
             <label translate="true">Exception Days</label>
             <collapsible>true</collapsible>
             <opened>false</opened>
-            <hint translate="true">One-off date overrides for this store — bank holidays, stocktake days, reduced hours. Add a row per exception. Leave empty if this store follows the regular weekly hours every day of the year.</hint>
         </settings>
         <htmlContent name="exceptions_tz_note">
             <block name="exceptions_tz_note_block"
@@ -693,7 +691,6 @@
             <label translate="true">Pickup Window Overrides</label>
             <collapsible>true</collapsible>
             <opened>false</opened>
-            <hint translate="true">By default this store offers every active pickup window at the global capacity. Only add rows here if you want to disable a window for this store or set a different capacity. Empty = behaves like every other store.</hint>
         </settings>
         <dynamicRows name="window_overrides">
             <settings>
@@ -777,7 +774,6 @@
         <settings>
             <label translate="true">Amenities</label>
             <collapsible>true</collapsible>
-            <hint translate="true">What this store offers — free parking, free coffee, wheelchair accessibility, etc. Manage the catalogue under In-Store Pickup → Amenities. Only active amenities appear in the picker below.</hint>
         </settings>
         <field name="assigned_amenity_ids" formElement="multiselect">
             <argument name="data" xsi:type="array">
@@ -805,7 +801,6 @@
         <settings>
             <label translate="true">Tags</label>
             <collapsible>true</collapsible>
-            <hint translate="true">Tags drive front-end filtering on the store locator — flagship store, drive-through, express collection, etc. Manage the catalogue under In-Store Pickup → Store Tags.</hint>
         </settings>
         <field name="assigned_tag_ids" formElement="multiselect">
             <argument name="data" xsi:type="array">

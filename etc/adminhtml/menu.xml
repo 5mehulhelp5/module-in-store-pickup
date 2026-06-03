@@ -3,27 +3,14 @@
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
     <menu>
         <!--
-            Shared top-level eTechFlow sidebar entry.
-
-            Declared identically by EVERY eTechFlow module — Magento merges
-            entries with the same id, so the entry exists exactly once even
-            with all modules installed, and missing exactly when zero are.
-            Hovering it opens a mega-menu where each module contributes one
-            column (or a single link if the module has only one page).
-
-            sortOrder 68 parks eTechFlow right above Amasty (sortOrder=69
-            on Keystation) — the established convention for paid extensions
-            is to cluster just above Stores. v1.1.14 used 88 expecting that
-            to land near Amasty, but Keystation's Hyva Commerce sidebar puts
-            Amasty at 69 and Magefan at ~70, so 88 ended up between System
-            (80) and Find Partners (100+). Verified live: 88 → bottom; 68 →
-            directly above Amasty.
+            NOTE: The shared eTechFlow top-level entries (eTechFlow::root,
+            eTechFlow::settings, eTechFlow::configuration) are intentionally
+            NOT declared here. They are provided by the other eTechFlow
+            modules (e.g. ImageOptimizer, DeliveryDate). Re-declaring them in
+            this file caused a duplicate "uniqueAddItemId" key-sequence in the
+            merged admin menu, which broke every admin page. This module's
+            items simply parent under the shared eTechFlow::root below.
         -->
-        <add id="eTechFlow::root"
-             title="eTechFlow"
-             module="ETechFlow_InStorePickup"
-             sortOrder="68"
-             resource="Magento_Backend::admin"/>
 
         <add id="ETechFlow_InStorePickup::isp_root"
              title="In-Store Pickup"
@@ -71,37 +58,5 @@
              parent="ETechFlow_InStorePickup::isp_root"
              action="etechflow_isp/pickupwindow/index"
              resource="ETechFlow_InStorePickup::pickup_windows"/>
-
-        <!--
-            Shared "Settings" column header in the eTechFlow mega-menu.
-
-            Declared identically by every eTechFlow module so it merges to
-            one column. The Configuration leaf (below) lives inside it so
-            it gets a proper column home in the mega-menu — orphan leaves
-            siblings of column-header parents dangle awkwardly at the
-            bottom of the panel.
-        -->
-        <add id="eTechFlow::settings"
-             title="Settings"
-             module="ETechFlow_InStorePickup"
-             sortOrder="500"
-             parent="eTechFlow::root"
-             resource="Magento_Backend::admin"/>
-
-        <!--
-            Shared "Configuration" leaf inside the Settings column.
-            All eTechFlow modules declare this same id with their own
-            section URL — Magento merges so only one entry appears, and
-            clicking it opens Stores → Configuration with the eTechFlow
-            tab pre-expanded. Any module's section URL works because
-            they all live under <tab id="etechflow">.
-        -->
-        <add id="eTechFlow::configuration"
-             title="Configuration"
-             module="ETechFlow_InStorePickup"
-             sortOrder="10"
-             parent="eTechFlow::settings"
-             action="adminhtml/system_config/edit/section/etechflow_instorepickup"
-             resource="Magento_Config::config"/>
     </menu>
 </config>

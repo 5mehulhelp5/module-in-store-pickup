@@ -4,6 +4,20 @@ All notable changes to this module. Adheres to [Semantic Versioning](https://sem
 
 ---
 
+## [2.1.0] — 2026-06-03 — Portal licensing, Stripe in-admin checkout, pickup-aware order email + checkout-capture fixes
+
+### Added
+
+- **SP-XXXX portal licensing** — `Model/LicenseValidator.php` (hybrid HMAC per-module / shared-bundle key + portal-validated subscription with two-factor domain + server-IP binding, IP-block auto-management, dev-host bypass, result caching). All admin pages (Stores / Holidays / Tags / Amenities / Pickup Windows) gate to a locked page until licensed.
+- **In-admin Stripe checkout + gate page** — `Controller/Adminhtml/License/{Gate,Checkout,Activated}.php` with a dark-navy 3-plan gate (Starter / Professional / Enterprise) that takes payment via Stripe and auto-saves the issued license key. New `payment` config group (Stripe keys, encrypted) and `license` fields (issued_key, portal_url, bundle key).
+- **Pickup-aware order confirmation email** — `view/frontend/email/order_new_pickup.html` + `Block/Email/PickupInfo.php` + `templates/email/pickup-info.phtml`. For Click & Collect orders it replaces the shipping/tracking wording with collection wording and shows a Collection Details panel (store, address, date & time) near the top; non-pickup orders are unchanged.
+
+### Fixed
+
+- **Pickup details never reached the order.** The picker saved store + slot to the quote, but the module had no `etc/fieldset.xml`, so nothing copied them to `sales_order`. Added the `sales_convert_quote` → `to_order` fieldset for `etechflow_isp_pickup_store_id` / `etechflow_isp_pickup_at`. This restores the admin pickup card, the pickup-aware confirmation email, and the staff/ready emails for real orders.
+- **`etc/adminhtml/system.xml` was invalid** — a `<comment>` contained a raw `<code>GB</code>` tag without CDATA, which failed XSD validation and blocked `setup:upgrade` / `di:compile`. Wrapped in CDATA.
+- **"Add New Store" form crashed** — `view/adminhtml/ui_component/etechflow_isp_store_form.xml` used 5 `<hint>` elements inside fieldset `<settings>`, which the UI-component schema rejects. Removed (descriptive text only; no fields lost).
+
 ## [2.0.1] — 2026-05-26 — Fix integration-test carrier assertion + v2.0.0 always-a-patch follow-up
 
 Pure test + patch hygiene. No customer-facing changes, no schema changes,

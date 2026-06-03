@@ -1,0 +1,37 @@
+<?php
+/**
+ * @var \ETechFlow\InStorePickup\Block\Email\PickupInfo $block
+ */
+$info = $block->getPickupInfo();
+if (!$info) {
+    return;
+}
+?>
+<table class="order-details" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
+    <tr>
+        <td style="background:#f4f8fb;border:1px solid #d6e2ec;border-left:4px solid #1a73e8;border-radius:6px;padding:18px 20px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#2b3a4a;">
+            <h3 style="margin:0 0 12px;font-size:16px;color:#0d1b2a;">In-Store Collection</h3>
+            <p style="margin:0 0 6px;font-size:14px;line-height:1.5;">
+                <strong style="color:#0d1b2a;"><?= $block->escapeHtml($info['store_name']) ?></strong>
+                <?php if ($info['address'] !== ''): ?>
+                    <br><?= $block->escapeHtml($info['address']) ?>
+                <?php endif; ?>
+                <?php if ($info['phone'] !== ''): ?>
+                    <br><?= $block->escapeHtml($info['phone']) ?>
+                <?php endif; ?>
+            </p>
+            <p style="margin:10px 0 0;font-size:14px;line-height:1.5;">
+                <span style="color:#5a6b7b;">Ready to collect on</span><br>
+                <strong style="color:#1a73e8;font-size:15px;"><?= $block->escapeHtml($info['pretty']) ?></strong>
+            </p>
+            <?php if (trim($info['instructions']) !== ''): ?>
+                <p style="margin:12px 0 0;font-size:13px;line-height:1.5;color:#5a6b7b;">
+                    <?= $block->escapeHtml($info['instructions']) ?>
+                </p>
+            <?php endif; ?>
+            <p style="margin:12px 0 0;font-size:13px;line-height:1.5;color:#5a6b7b;">
+                We&rsquo;ll email you a pickup code as soon as your order is ready to collect &mdash; please bring it with you.
+            </p>
+        </td>
+    </tr>
+</table>
