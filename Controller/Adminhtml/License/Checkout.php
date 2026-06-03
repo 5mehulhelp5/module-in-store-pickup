@@ -25,11 +25,11 @@ class Checkout extends Action
     private const XML_STRIPE_SECRET = 'etechflow_instorepickup/payment/stripe_secret_key';
     private const XML_STRIPE_CURR   = 'etechflow_instorepickup/payment/stripe_currency';
 
-    /** Plan slugs -> [name, amount in cents, display]. */
+    /** Plan slugs -> [name, amount in cents, display]. Billing-period model. */
     private const PLAN_INFO = [
-        'isp_starter'      => ['name' => 'In-Store Pickup Starter',      'amount' => 1500, 'display' => '$15'],
-        'isp_professional' => ['name' => 'In-Store Pickup Professional',  'amount' => 3900, 'display' => '$39'],
-        'isp_enterprise'   => ['name' => 'In-Store Pickup Enterprise',    'amount' => 7900, 'display' => '$79'],
+        'isp_weekly'  => ['name' => 'In-Store Pickup — Weekly',  'amount' => 900,   'display' => '$9/week'],
+        'isp_monthly' => ['name' => 'In-Store Pickup — Monthly', 'amount' => 2900,  'display' => '$29/month'],
+        'isp_yearly'  => ['name' => 'In-Store Pickup — Yearly',  'amount' => 29000, 'display' => '$290/year'],
     ];
 
     public function __construct(

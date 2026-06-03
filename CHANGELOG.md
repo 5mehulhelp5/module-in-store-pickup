@@ -4,6 +4,12 @@ All notable changes to this module. Adheres to [Semantic Versioning](https://sem
 
 ---
 
+## [2.1.1] — 2026-06-03 — Billing-period plans (weekly / monthly / yearly)
+
+### Changed
+
+- **License gate now offers billing periods instead of feature tiers.** Replaced the Starter/Professional/Enterprise cards with **Weekly $9 / Monthly $29 / Yearly $290** (one full-feature price point, USD; yearly ≈ 2 months free). Updated `Controller/Adminhtml/License/Checkout.php` `PLAN_INFO` (`isp_weekly|monthly|yearly`) and the gate template. Matches the eTechFlow portal's new billing-period subscription model.
+
 ## [2.1.0] — 2026-06-03 — Portal licensing, Stripe in-admin checkout, pickup-aware order email + checkout-capture fixes
 
 ### Added
