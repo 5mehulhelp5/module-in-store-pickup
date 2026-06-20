@@ -4,6 +4,10 @@
     <update handle="styles"/>
     <body>
         <referenceContainer name="content">
+            <block class="Magento\Backend\Block\Template"
+                   name="etechflow_isp_update_notice"
+                   template="ETechFlow_InStorePickup::update-notice.phtml"
+                   cacheable="false"/>
             <uiComponent name="etechflow_isp_store_listing"/>
         </referenceContainer>
     </body>

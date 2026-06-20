@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Update notice: when the admin opens the In-Store Pickup admin area, surface a bell
+ * notification if a newer module version is published to the eTechFlow Composer repo.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="controller_action_predispatch_etechflow_isp">
+        <observer name="etechflow_isp_update_notification" instance="ETechFlow\InStorePickup\Observer\AddUpdateNotification"/>
+    </event>
+</config>
