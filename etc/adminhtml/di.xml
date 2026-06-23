@@ -10,4 +10,11 @@
                 type="ETechFlow\InStorePickup\Plugin\Adminhtml\MarkReadyButtonPlugin"
                 sortOrder="100"/>
     </type>
+    <!-- Self-contained shared-menu provider: injects eTechFlow::root idempotently
+         so this module needs no other eTechFlow module and never declares the
+         shared menu id in XML. See Plugin/Adminhtml/EnsureEtechflowMenu.php. -->
+    <type name="Magento\Backend\Model\Menu\Builder">
+        <plugin name="etechflow_instorepickup_ensure_root_menu"
+                type="ETechFlow\InStorePickup\Plugin\Adminhtml\EnsureEtechflowMenu"/>
+    </type>
 </config>
